@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-
+using UnityEngine.AI;
 
 //<summary>
 //Game object, that creates maze and instantiates it in scene
@@ -25,6 +25,7 @@ public class MazeSpawner : MonoBehaviour
 	public GameObject Pillar = null;
 	public GameObject GoalPrefab = null;
 	public GameObject ExitPrefab = null;  // Added exit prefab
+	public GameObject EnemyPrefab = null;
 	public int Rows = 5;
 	public int Columns = 5;
 	public float CellWidth = 5;
@@ -90,7 +91,17 @@ public class MazeSpawner : MonoBehaviour
 			tmp.transform.parent = transform;
 		}
 
-
+		// After instantiating exit prefab and before the floor instantiation loop
+		if (EnemyPrefab != null)
+		{
+			int enemyRow = Random.Range(0, Rows);
+			int enemyColumn = Random.Range(0, Columns);
+			float enemyX = enemyColumn * (CellWidth + (AddGaps ? .2f : 0));
+			float enemyZ = enemyRow * (CellHeight + (AddGaps ? .2f : 0));
+			Vector3 enemyPosition = new Vector3(enemyX, 1.5f, enemyZ);
+			GameObject enemyInstance = Instantiate(EnemyPrefab, enemyPosition, Quaternion.identity) as GameObject;
+			enemyInstance.transform.parent = transform;
+		}
 
 		for (int row = 0; row < Rows; row++)
 		{
@@ -142,5 +153,18 @@ public class MazeSpawner : MonoBehaviour
 				}
 			}
 		}
+		// Bake the NavMesh after the maze has been instantiated
+		NavMeshSurface surface = GetComponent<NavMeshSurface>();
+		surface.BuildNavMesh();
+		GameObject enemyObj = GameObject.FindGameObjectWithTag("Enemy"); // Assuming your enemy has the tag "Enemy"
+		if (enemyObj != null)
+		{
+			EnemyNavMesh enemyScript = enemyObj.GetComponent<EnemyNavMesh>();
+			if (enemyScript != null)
+			{
+				enemyScript.isNavMeshReady = true;
+			}
+		}
+
 	}
 }
