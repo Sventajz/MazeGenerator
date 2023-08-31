@@ -10,6 +10,14 @@ public class EnemyNavMesh : MonoBehaviour
     [SerializeField] private Transform movePositionTransform;
     [SerializeField] private float attackDistance = 3.0f;  // distance within which to attack the player
     [SerializeField] private float attackRate = 1.0f;  // attacks per second
+    [SerializeField] LayerMask groundLayer, playerLayer;
+
+    // patrol
+
+    Vector3 destPoint;
+    bool walkpointSet;
+    [SerializeField] float range;
+
 
     private NavMeshAgent navMeshAgent;
     private Animator animator;  // assume you have an Animator attached to the enemy
@@ -61,55 +69,61 @@ public class EnemyNavMesh : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (isNavMeshReady)
-        {
-            if (player == null)
+        Debug.Log(walkpointSet);
+        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+        if (distanceToPlayer > 20) Patrol();
+        if (distanceToPlayer < 20) {
+            if (isNavMeshReady)
             {
-                // What the enemy should do if the player is no longer available
-                // For now, let's just stop the enemy
-                navMeshAgent.isStopped = true;
-                return;
-            }
-
-            if (player)
-            {
-                // Calculate distance to player
-                float distanceToPlayer = Vector3.Distance(transform.position, player.position);
-
-                // If within attack range, attack player and stop movement
-                if (distanceToPlayer <= attackDistance)
+                if (player == null)
                 {
-                    Attack();
+                    // What the enemy should do if the player is no longer available
+                    // For now, let's just stop the enemy
                     navMeshAgent.isStopped = true;
-                    animator.SetBool("isMoving", false); // Make sure to set isMoving to false when attacking or idle
+                    return;
+                }
+
+                if (player)
+                {
+                    // Calculate distance to player
+                    
+                    
+
+                    // If within attack range, attack player and stop movement
+                    if (distanceToPlayer <= attackDistance)
+                    {
+                        Attack();
+                        navMeshAgent.isStopped = true;
+                        animator.SetBool("isMoving", false); // Make sure to set isMoving to false when attacking or idle
+                    }
+                    else
+                    {
+                        navMeshAgent.isStopped = false;
+                        navMeshAgent.destination = movePositionTransform.position;
+
+                        // Set isMoving for the Animator
+                        if (navMeshAgent.velocity.sqrMagnitude > 0.01)
+                        {
+                            //Debug.Log("Enemy is moving.");
+                            animator.SetBool("isMoving", true);
+                        }
+                        else
+                        {
+                            animator.SetBool("isMoving", false);
+                        }
+                    }
                 }
                 else
                 {
-                    navMeshAgent.isStopped = false;
                     navMeshAgent.destination = movePositionTransform.position;
-
-                    // Set isMoving for the Animator
                     if (navMeshAgent.velocity.sqrMagnitude > 0.01)
                     {
-                        //Debug.Log("Enemy is moving.");
                         animator.SetBool("isMoving", true);
                     }
                     else
                     {
                         animator.SetBool("isMoving", false);
                     }
-                }
-            }
-            else
-            {
-                navMeshAgent.destination = movePositionTransform.position;
-                if (navMeshAgent.velocity.sqrMagnitude > 0.01)
-                {
-                    animator.SetBool("isMoving", true);
-                }
-                else
-                {
-                    animator.SetBool("isMoving", false);
                 }
             }
         }
@@ -181,6 +195,25 @@ public class EnemyNavMesh : MonoBehaviour
                 Cursor.lockState = CursorLockMode.None;
                 SceneManager.LoadScene(0);
             }
+        }
+    }
+
+    void Patrol()
+    {
+        if (!walkpointSet) SearchForDest() ;
+        if (walkpointSet) navMeshAgent.SetDestination(destPoint);
+        if (Vector3.Distance(transform.position, destPoint) < 10) walkpointSet = false;
+     
+    }
+    void SearchForDest()
+    {
+        float z = Random.Range(-range, range);
+        float x = Random.Range(-range, range);
+        destPoint = new Vector3(transform.position.x + x, transform.position.y, transform.position.z + z);
+
+            if (Physics.Raycast(destPoint, Vector3.down, groundLayer))
+        {
+            walkpointSet = true;
         }
     }
 }
