@@ -32,6 +32,8 @@ public class MazeSpawner : MonoBehaviour
 	public float CellHeight = 5;
 	public bool AddGaps = true;
 
+	public Transform ExitTransform;
+
 	private BasicMazeGenerator mMazeGenerator = null;
 
 	void Start()
@@ -62,21 +64,15 @@ public class MazeSpawner : MonoBehaviour
 
 
 		// After maze generation
-		int exitCorner = Random.Range(0, 3); // Gives a random number: 0, 1 or 2
+		int exitCorner = 2; // Gives a random number: 0, 1 or 2
 		MazeCell exitCell;
-		Vector3 exitPosition;
+		Vector3 exitPosition = new Vector3(36.0f, 0.0f, 36.0f);
 
 		switch (exitCorner)
 		{
 			case 0:
-				exitCell = mMazeGenerator.GetMazeCell(0, Columns - 1); // top right cell
-				exitCell.WallFront = false; // Remove the front wall of the cell
-				exitPosition = new Vector3((Columns - 1) * (CellWidth + (AddGaps ? .2f : 0)), 1, 0);
 				break;
 			case 1:
-				exitCell = mMazeGenerator.GetMazeCell(Rows - 1, 0); // bottom left cell
-				exitCell.WallLeft = false; // Remove the left wall of the cell
-				exitPosition = new Vector3(0, 1, (Rows - 1) * (CellHeight + (AddGaps ? .2f : 0)));
 				break;
 			default: // or case 2:
 				exitCell = mMazeGenerator.GetMazeCell(Rows - 1, Columns - 1); // bottom right cell
@@ -84,10 +80,12 @@ public class MazeSpawner : MonoBehaviour
 				exitPosition = new Vector3((Columns - 1) * (CellWidth + (AddGaps ? .2f : 0)), 1, (Rows - 1) * (CellHeight + (AddGaps ? .2f : 0)));
 				break;
 		}
-		// Instantiate exit prefab at the exit position
+
+		// Instantiate exit prefab at the fixed exit position
 		if (ExitPrefab != null)
 		{
 			GameObject tmp = Instantiate(ExitPrefab, exitPosition, Quaternion.Euler(0, 0, 0)) as GameObject;
+			ExitTransform = tmp.transform;  // Store the transform
 			tmp.transform.parent = transform;
 		}
 
@@ -112,7 +110,8 @@ public class MazeSpawner : MonoBehaviour
 				MazeCell cell = mMazeGenerator.GetMazeCell(row, column);
 				GameObject tmp;
 				tmp = Instantiate(Floor, new Vector3(x, 0, z), Quaternion.Euler(0, 0, 0)) as GameObject;
-				tmp.transform.parent = transform;
+                
+                tmp.transform.parent = transform;
 				if (cell.WallRight)
 				{
 					tmp = Instantiate(Wall, new Vector3(x + CellWidth / 2, 0, z) + Wall.transform.position, Quaternion.Euler(0, 90, 0)) as GameObject;// right

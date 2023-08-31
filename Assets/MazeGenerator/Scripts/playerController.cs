@@ -17,7 +17,7 @@ public class playerController : MonoBehaviour
     public LayerMask groundMask;
     private bool isGrounded;
     private float playerYVelocity;
-    private Vector3 startPosition;
+    public Vector3 startPosition;
     public AudioClip JumpSound = null;
     public AudioClip HitSound = null;
     public AudioClip CoinSound = null;
@@ -26,6 +26,7 @@ public class playerController : MonoBehaviour
     [SerializeField]
     //private float startTime;
     private float playerStartTime;
+    public ShortestPathAlgorithm shortestPathAlgorithm;
 
     void Start()
     {
@@ -53,10 +54,12 @@ public class playerController : MonoBehaviour
     {
         PlayerMovement();
         GravityLogic();
+        /*
         if (Input.GetKeyDown(KeyCode.R))
         {
             Respawn();
         }
+        */
     }
     void OnDrawGizmos()
     {
@@ -136,6 +139,7 @@ public class playerController : MonoBehaviour
 
     public void Respawn()
     {
+        Debug.Log("Respawning player.");
         transform.position = startPosition;
         playerYVelocity = 0;
         StartCoroutine(DisableMovementTemporarily());
@@ -176,9 +180,25 @@ public class playerController : MonoBehaviour
             }
             Destroy(other.gameObject);
             GameManager.instance.AddPoint();
+
+            if (shortestPathAlgorithm != null)
+            {
+                shortestPathAlgorithm.ShowBreadcrumbs();
+            }
+            else
+            {
+                Debug.LogError("ShortestPathAlgorithm is not set!");
+            }
+            /*
             controller.enabled = false;
             Respawn();
             controller.enabled = true;
+            */
+        }
+
+        if (other.gameObject.tag == "Enemy")
+        {
+            Debug.Log("Triggered with enemy");
         }
 
         if (other.CompareTag("exitPrefab"))
