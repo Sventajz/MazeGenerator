@@ -8,7 +8,7 @@ using UnityEngine.UI;
 public class EnemyNavMesh : MonoBehaviour
 {
     [SerializeField] private Transform movePositionTransform;
-    [SerializeField] private float attackDistance = 3.0f;  // distance within which to attack the player
+    [SerializeField] private float attackDistance = 0.5f;  // distance within which to attack the player
     [SerializeField] private float attackRate = 1.0f;  // attacks per second
     [SerializeField] LayerMask groundLayer, playerLayer;
 

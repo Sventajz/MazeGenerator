@@ -110,7 +110,7 @@ public class MazeSpawner : MonoBehaviour
 				MazeCell cell = mMazeGenerator.GetMazeCell(row, column);
 				GameObject tmp;
 				tmp = Instantiate(Floor, new Vector3(x, 0, z), Quaternion.Euler(0, 0, 0)) as GameObject;
-                
+                tmp = Instantiate(Floor, new Vector3(x, 4, z), Quaternion.Euler(0, 0, 0)) as GameObject;
                 tmp.transform.parent = transform;
 				if (cell.WallRight)
 				{
